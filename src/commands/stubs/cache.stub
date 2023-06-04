@@ -1,0 +1,51 @@
+<?php
+namespace {%namespace%};
+
+use {%namespacePrefix%}\basic\BaseCache;
+use {%namespacePrefix%}\dao\{%namespaceSuffix%}\{%className%}Dao;
+
+/**
+ * Class {%className%}Cache
+ * @package {%namespace%}
+ */
+class {%className%}Cache extends BaseCache
+{
+
+    /**
+     * 获取Dao层
+     * 
+     * @return {%className%}Dao
+     */
+    public function getDao(): object
+    {
+        return app({%className%}Dao::class);
+    }
+
+    /**
+     * Id获取详情
+     *
+     * @param integer $id
+     * @return array|\think\model|null
+     */
+    public function getIdToInfo(int $id)
+    {
+        if($id > 0){
+            return $this->remember('{%classNameSnake%}:id_to_info:'.$id, function() use (&$id) {
+                return $this->getDao()->getInfo($id);
+            });
+        }
+        return null;
+    }
+
+    /**
+     * 删除缓存
+     */
+    public function deleteCache($list)
+    {
+        if(!$list->isEmpty()){
+            foreach ($list as $value) {
+                $this->delete('{%classNameSnake%}:id_to_info:' . $value['{%primaryKey%}']);
+            }
+        }
+    }
+}

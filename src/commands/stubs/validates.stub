@@ -1,0 +1,24 @@
+<?php
+namespace {%namespace%};
+
+use {%namespacePrefix%}\basic\BaseValidates as BaseValidates;
+
+/**
+ * Class {%className%}Validates
+ * @package {%namespace%}
+ */
+class {%className%}Validates extends BaseValidates
+{
+
+    protected $rule = [
+        {%$rule%}
+    ];
+
+    protected $message = [
+        {%message%}
+    ];
+
+    protected $scene = [
+        {%scene%}
+    ]; 
+}

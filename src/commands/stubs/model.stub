@@ -1,0 +1,33 @@
+<?php
+declare (strict_types = 1);
+
+namespace {%namespace%};
+
+use think\model\concern\SoftDelete;
+use {%namespacePrefix%}\basic\BaseModel;
+use {%namespacePrefix%}\cache\{%namespaceSuffix%}\{%className%}Cache;
+
+/**
+ * Class {%className%}Model
+ * @package {%namespace%}
+ */
+class {%className%}Model extends BaseModel
+{
+    {%deleteField%}
+    protected $pk                = '{%primaryKey%}';
+    protected $name              = '{%classNameSnake%}';
+    
+    protected $hidden = [
+    ];
+    
+    // 设置字段信息
+    protected $schema = [
+        {%columnsStr%}
+    ];
+
+    public function __construct(array $data = [])
+    {
+        parent::__construct($data);
+        self::$cache = app({%className%}Cache::class);
+    }
+}

@@ -1,0 +1,126 @@
+<?php
+namespace {%namespace%};
+
+use {%namespacePrefix%}\basic\BaseServices;
+use {%namespacePrefix%}\cache\{%namespaceSuffix%}\{%className%}Cache;
+use think\exception\ValidateException;
+
+/**
+ * Class {%className%}Services
+ * @package {%namespace%}
+ */
+class {%className%}Services extends BaseServices
+{
+
+    /**
+     * 获取缓存
+     * 
+     * @return {%className%}Cache
+     */
+    public function getCache(): object
+    {
+        return app({%className%}Cache::class);
+    }
+
+    /**
+     * Id获取详情
+     *
+     * @param integer $id
+     * @return array|\think\model|null
+     */
+    public function getIdToInfo(int $id)
+    {
+        return $this->getCache()->getIdToInfo($id);
+    }
+
+    /**
+     * 获取详情信息
+     *
+     * @param integer $id
+     * @param array $field_info
+     * @return array|\think\model
+     */
+    public function show(int $id, array $field_info)
+    {
+        if(!($info = $this->getIdToInfo($id))){
+            throw new ValidateException('未找到相关信息');
+        }
+
+        return $this->getFieldInfo($info, $field_info);
+    }
+
+    /**
+     * 获取列表
+     *
+     * @param array $data
+     * @param string $field
+     * @param array $with
+     * @return \think\Collection
+     */
+    public function get{%className%}List(array $data, string $field, array $with, array $field_info)
+    {
+        $where = [];
+
+        [$page,$limit] = $this->getPageValue();
+
+        $list = $this->getCache()->getDao()->selectList('', $where, $field, '', $with, $page, $limit);
+
+        $list = $this->getListFieldInfo($list, $field_info);
+
+        return $list;
+    }
+
+    /**
+     * 创建信息
+     *
+     * @param array $data
+     * @return void
+     */
+    public function create(array $data)
+    {
+        //验证
+
+        $this->transaction(function() use (&$data) {
+            $this->createInfo($data);
+        });
+    }
+
+    /**
+     * 编辑信息
+     *
+     * @param integer $id
+     * @param array $data
+     * @return void
+     */
+    public function update(int $id, array $data)
+    {
+        if(!($info = $this->getIdToInfo($id))){
+            throw new ValidateException('未找到相关信息');
+        }
+
+        //验证
+
+        $this->transaction(function() use (&$id, &$data) {
+            $this->updateInfo($id, $data);
+        });
+    }
+
+    /**
+     * 删除信息
+     *
+     * @param integer $id
+     * @return void
+     */
+    public function destroy(int $mid, int $id)
+    {
+        if(!($info = $this->getIdToInfo($id))){
+            throw new ValidateException('未找到相关信息');
+        }
+
+        $this->transaction(function() use (&$id) {
+            $this->updateInfo($id, [
+                'delete_time' => time()
+            ]);
+        });
+    }
+}
