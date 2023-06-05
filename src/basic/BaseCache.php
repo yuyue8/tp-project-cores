@@ -2,6 +2,7 @@
 namespace Yuyue8\TpProjectCores\basic;
 
 use Closure;
+use \Yuyue8\TpProjectCores\cache\UpdateModelCacheJobs;
 use think\cache\driver\Redis;
 use think\Container;
 use think\facade\Cache;
@@ -23,6 +24,9 @@ abstract class BaseCache
      */
     public function deleteAllCache($list)
     {
+        /** @var UpdateModelCacheJobs $updateModelCacheJobs */
+        $updateModelCacheJobs = app(UpdateModelCacheJobs::class);
+        $updateModelCacheJobs->dispatch([get_class($this), $list]);
     }
 
     /**
