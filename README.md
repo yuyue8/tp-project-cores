@@ -20,11 +20,12 @@ php think make:cores admin/admin_user
 
 使用下面命令会创建`controller`类
 ```
-php think make:cores-controller controller/admin/admin_user app\services\admin\AdminUserServices app\validates\admin\AdminUserValidates
+php think make:cores-controller controller/admin/admin_user app\services\admin\AdminUserServices app\validates\admin\AdminUserValidates app\BaseController
 ```
 `controller/admin/admin_user` 为在app\controller\admin下创建AdminUser控制器
 `app\services\admin\AdminUserServices` 为控制器所使用的`services`类
 `app\validates\admin\AdminUserValidates` 为控制器所使用的`validate`类
+`app\BaseController` 为控制器所继承的基类，可以不传，默认为`app\BaseController`
 
 
 #### 参数过滤
