@@ -16,7 +16,8 @@ class MakeCoresController extends Command
         $this->setName('make:cores-controller')
         ->addArgument('name', Argument::REQUIRED, "The name of the class")
         ->addArgument('services_name', Argument::REQUIRED, 'services类')
-        ->addArgument('validate_name', Argument::REQUIRED, 'validate类');
+        ->addArgument('validate_name', Argument::REQUIRED, 'validate类')
+        ->addArgument('base_controller_name', Argument::OPTIONAL, 'controller基类', \app\BaseController::class);
     }
 
     public function handle()
@@ -46,8 +47,6 @@ class MakeCoresController extends Command
 
         $stub = file_get_contents($this->getStub('controller'));
 
-        $base_controller = Config::get('tp_config.base_controller', \app\BaseController::class);
-
         $service_class = $this->getServices();
 
         [$service_namespace, $service_name] = $this->getNamespaceName(ltrim(str_replace('\\', '/', $service_class), '/'));
@@ -57,7 +56,7 @@ class MakeCoresController extends Command
         file_put_contents($pathname, str_replace(['{%className%}', '{%namespace%}', '{%baseController%}', '{%serviceNamespace%}', '{%validateNamespace%}', '{%validateColumns%}'], [
             $name,
             $namespace,
-            $base_controller,
+            $this->getControllerBase(),
             $service_class,
             $this->getValidate(),
             $this->getValidateColumns($table_name)
@@ -67,7 +66,7 @@ class MakeCoresController extends Command
 
         $controller = str_replace('\\', '.', substr($namespace, strpos($namespace, 'controller\\') + 11) . '\\' . $name);
 
-        $route = "Route::get('{$table_name}/read/:id', '{$controller}/read');\nRoute::get('{$table_name}/get_list', '{$controller}/get_list');\nRoute::post('{$table_name}/create', '{$controller}/create');\nRoute::post('{$table_name}/update/:id', '{$controller}/update');\nRoute::post('{$table_name}/destroy/:id', '{$controller}/destroy');";
+        $route = "Route::get('/{$table_name}/read/:id', '{$controller}/read');\nRoute::get('/{$table_name}/get_list', '{$controller}/get_list');\nRoute::post('/{$table_name}/create', '{$controller}/create');\nRoute::post('/{$table_name}/update/:id', '{$controller}/update');\nRoute::post('/{$table_name}/destroy/:id', '{$controller}/destroy');";
 
         $this->output->writeln('<info>' . "route:\n" . $route . '</info>');
     }
@@ -87,6 +86,18 @@ class MakeCoresController extends Command
     public function getValidate()
     {
         $classname = trim($this->input->getArgument('validate_name'));
+        $classname = ltrim(str_replace('\\', '/', $classname), '/');
+
+        [$namespace, $name] = $this->getNamespaceName($classname);
+
+        $name = Str::studly($name);
+
+        return str_replace(DIRECTORY_SEPARATOR, '\\', $namespace) . DIRECTORY_SEPARATOR . $name;
+    }
+
+    public function getControllerBase()
+    {
+        $classname = trim($this->input->getArgument('base_controller_name'));
         $classname = ltrim(str_replace('\\', '/', $classname), '/');
 
         [$namespace, $name] = $this->getNamespaceName($classname);
