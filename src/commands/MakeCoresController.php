@@ -165,15 +165,15 @@ class MakeCoresController extends Command
                 break;
             case 'char':
             case 'varchar':
-                return '';
+                return "''";
                 break;
             case 'datetime':
             case 'date':
             case 'time':
-                return '';
+                return "''";
                 break;
             default:
-                return '';
+                return "''";
         }
     }
 }

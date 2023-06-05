@@ -4,7 +4,7 @@ namespace {%namespace%};
 use {%baseController%} as BaseController;
 use {%serviceNamespace%} as Services;
 use {%validateNamespace%} as Validate;
-use think\App;
+use think\facade\App;
 
 /**
  * 
