@@ -57,7 +57,7 @@ class {%className%}Services extends BaseServices
      * @param array $with
      * @return \think\Collection
      */
-    public function get{%className%}List(array $data, string $field, array $with, array $field_info)
+    public function getList(array $data, string $field, array $with, array $field_info)
     {
         $where = [];
 
@@ -111,7 +111,7 @@ class {%className%}Services extends BaseServices
      * @param integer $id
      * @return void
      */
-    public function destroy(int $mid, int $id)
+    public function destroy(int $id)
     {
         if(!($info = $this->getIdToInfo($id))){
             throw new ValidateException('未找到相关信息');

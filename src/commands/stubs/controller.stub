@@ -1,89 +1,88 @@
 <?php
 namespace {%namespace%};
 
-use app\Request;
-use app\xm\controller\AuthController;
-use data\services\xm_set\XmSetBrandServices;
-use data\validate\xm\xm_set\XmSetBrandValidate;
-use think\facade\App;
+use {%baseController%} as BaseController;
+use {%serviceNamespace%} as Services;
+use {%validateNamespace%} as Validate;
+use think\App;
 
 /**
  * 
  */
-class SetBrand extends AuthController
+class {%className%} extends BaseController
 {
-    /** @var XmSetBrandServices $services */
+    /** @var Services $services */
     protected $services;
 
-    public function __construct(App $app, XmSetBrandServices $services)
+    public function __construct(App $app, Services $services)
     {
         parent::__construct($app);
         $this->services = $services;
     }
 
     /**
-     * 获取品牌列表
+     * 获取详情
      *
-     * @return \think\Response
-     */
-    public function get_brand_list()
-    {
-        $data = [
-            'mid' => $this->mid
-        ];
-
-        return app('json')->success($this->services->getBrandList($data, 'id,mid,name,synchronous,create_time', [], ['synchronous_info', 'create_time_info']));
-    }
-
-    /**
-     * 创建品牌信息
-     *
-     * @param Request $request
-     * @return \think\Response
-     */
-    public function create(Request $request)
-    {
-        $data = $request->postMore([
-            ['name', ''],
-            [['synchronous', 'a'], []]
-        ]);
-
-        /** @var XmSetBrandValidate $xmSetBrandValidate */
-        $xmSetBrandValidate = app(XmSetBrandValidate::class);
-        $xmSetBrandValidate->scene('create')->arrayGoCheck($data);
-
-        return app('json')->success($this->services->create($this->mid, $data));
-    }
-
-    /**
-     * 编辑品牌信息
-     *
-     * @param Request $request
      * @param integer $id
      * @return \think\Response
      */
-    public function save(Request $request, int $id)
+    public function read(int $id)
     {
-        $data = $request->postMore([
-            ['name', ''],
-            [['synchronous', 'a'], []]
-        ]);
-
-        /** @var XmSetBrandValidate $xmSetBrandValidate */
-        $xmSetBrandValidate = app(XmSetBrandValidate::class);
-        $xmSetBrandValidate->scene('update')->arrayGoCheck($data);
-
-        return app('json')->success($this->services->update($this->mid, $this->first_topdid, $id, $data));
+        return get_json_util()->success($this->services->show($id, []));
     }
 
     /**
-     * 删除品牌信息
+     * 获取列表
+     *
+     * @return \think\Response
+     */
+    public function get_list()
+    {
+        $data = [];
+        return get_json_util()->success($this->services->getList($data, '*', [], []));
+    }
+
+    /**
+     * 创建信息
+     *
+     * @return \think\Response
+     */
+    public function create()
+    {
+        /** @var Validate $validate */
+        $validate = app(Validate::class);
+        $data = $validate->scene('create')->goCheck([
+            {%validateColumns%}
+        ]);
+
+        return get_json_util()->success($this->services->create($data));
+    }
+
+    /**
+     * 编辑信息
+     *
+     * @param integer $id
+     * @return \think\Response
+     */
+    public function update(int $id)
+    {
+        /** @var Validate $validate */
+        $validate = app(Validate::class);
+        $data = $validate->scene('update')->goCheck([
+            {%validateColumns%}
+        ]);
+
+        return get_json_util()->success($this->services->update($id, $data));
+    }
+
+    /**
+     * 删除信息
      *
      * @param integer $id
      * @return \think\Response
      */
     public function destroy(int $id)
     {
-        return app('json')->success($this->services->destroy($this->mid, $id));
+        return get_json_util()->success($this->services->destroy($id));
     }
 }

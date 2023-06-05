@@ -4,6 +4,9 @@ namespace Yuyue8\TpProjectCores\commands;
 
 use think\console\Command;
 use think\console\input\Argument;
+use think\facade\Config;
+use think\facade\Db;
+use think\helper\Str;
 
 class MakeCoresController extends Command
 {
@@ -11,7 +14,9 @@ class MakeCoresController extends Command
     {
         parent::configure();
         $this->setName('make:cores-controller')
-        ->addArgument('name', Argument::REQUIRED, "The name of the class");
+        ->addArgument('name', Argument::REQUIRED, "The name of the class")
+        ->addArgument('services_name', Argument::REQUIRED, 'services类')
+        ->addArgument('validate_name', Argument::REQUIRED, 'validate类');
     }
 
     public function handle()
@@ -24,7 +29,6 @@ class MakeCoresController extends Command
         $root_path = $this->app->getRootPath();
 
         $name = Str::studly($name);
-        $name_snake = Str::snake($name);
 
         $whole_namespace = 'app' . DIRECTORY_SEPARATOR . $namespace;
 
@@ -38,15 +42,58 @@ class MakeCoresController extends Command
             mkdir(dirname($pathname), 0755, true);
         }
 
+        $namespace = str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace);
+
         $stub = file_get_contents($this->getStub('controller'));
 
-        file_put_contents($pathname, str_replace(['{%className%}', '{%namespace%}', '{%namespacePrefix%}', '{%namespaceSuffix%}', '{%classNameSnake%}'], [
+        $base_controller = Config::get('tp_config.base_controller', \app\BaseController::class);
+
+        $service_class = $this->getServices();
+
+        [$service_namespace, $service_name] = $this->getNamespaceName(ltrim(str_replace('\\', '/', $service_class), '/'));
+
+        $table_name = Str::snake(rtrim($service_name, 'Services'));
+
+        file_put_contents($pathname, str_replace(['{%className%}', '{%namespace%}', '{%baseController%}', '{%serviceNamespace%}', '{%validateNamespace%}', '{%validateColumns%}'], [
             $name,
-            str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
-            str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
-            str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
-            $name_snake
+            $namespace,
+            $base_controller,
+            $service_class,
+            $this->getValidate(),
+            $this->getValidateColumns($table_name)
         ], $stub));
+
+        $this->output->writeln('<info>' . 'controller:' . $name . ' created successfully.</info>');
+
+        $controller = str_replace('\\', '.', substr($namespace, strpos($namespace, 'controller\\') + 11) . '\\' . $name);
+
+        $route = "Route::get('{$table_name}/read/:id', '{$controller}/read');\nRoute::get('{$table_name}/get_list', '{$controller}/get_list');\nRoute::post('{$table_name}/create', '{$controller}/create');\nRoute::post('{$table_name}/update/:id', '{$controller}/update');\nRoute::post('{$table_name}/destroy/:id', '{$controller}/destroy');";
+
+        $this->output->writeln('<info>' . "route:\n" . $route . '</info>');
+    }
+
+    public function getServices()
+    {
+        $classname = trim($this->input->getArgument('services_name'));
+        $classname = ltrim(str_replace('\\', '/', $classname), '/');
+
+        [$namespace, $name] = $this->getNamespaceName($classname);
+
+        $name = Str::studly($name);
+
+        return str_replace(DIRECTORY_SEPARATOR, '\\', $namespace) . DIRECTORY_SEPARATOR . $name;
+    }
+
+    public function getValidate()
+    {
+        $classname = trim($this->input->getArgument('validate_name'));
+        $classname = ltrim(str_replace('\\', '/', $classname), '/');
+
+        [$namespace, $name] = $this->getNamespaceName($classname);
+
+        $name = Str::studly($name);
+
+        return str_replace(DIRECTORY_SEPARATOR, '\\', $namespace) . DIRECTORY_SEPARATOR . $name;
     }
 
     /**
@@ -68,5 +115,65 @@ class MakeCoresController extends Command
     protected function getStub(string $stub_name): string
     {
         return __DIR__ . DIRECTORY_SEPARATOR . 'stubs' . DIRECTORY_SEPARATOR . $stub_name . '.stub';
+    }
+
+    public function getColumnsInfo(string $table_name)
+    {
+        $sql = "SELECT COLUMN_NAME,COLUMN_KEY,DATA_TYPE,CHARACTER_MAXIMUM_LENGTH,COLUMN_COMMENT,IS_NULLABLE 
+                FROM INFORMATION_SCHEMA.Columns 
+                WHERE table_name='{$table_name}'";
+
+        return Db::query($sql);
+    }
+
+    public function getValidateColumns(string $table_name)
+    {
+        $columns_list = $this->getColumnsInfo($table_name);
+
+        $autoField = [
+            'delete_time',
+            'create_time',
+            'update_time',
+        ];
+
+        $str = '';
+        foreach ($columns_list as $key => $value) {
+            if($value['COLUMN_KEY'] == 'PRI') {
+                continue;
+            }
+            if(in_array($value['COLUMN_NAME'], $autoField)) {
+                continue;
+            }
+            $columns_default = $this->getColumnsDefault($value['DATA_TYPE']);
+            $str .= "['{$value['COLUMN_NAME']}', {$columns_default}],\n            ";
+        }
+
+        return $str;
+    }
+
+    public function getColumnsDefault(string $field)
+    {
+        switch ($field) {
+            case 'int':
+            case 'bigint':
+            case 'tinyint':
+            case 'smallint':
+                return 0;
+                break;
+            case 'decimal':
+                return 0;
+                break;
+            case 'char':
+            case 'varchar':
+                return '';
+                break;
+            case 'datetime':
+            case 'date':
+            case 'time':
+                return '';
+                break;
+            default:
+                return '';
+        }
     }
 }

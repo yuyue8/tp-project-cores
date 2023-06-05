@@ -4,5 +4,6 @@
 // +----------------------------------------------------------------------
 
 return [
-    'project_cores_namespace' => 'app'
+    'project_cores_namespace' => 'app',
+    'base_controller'         => \app\BaseController::class
 ];
