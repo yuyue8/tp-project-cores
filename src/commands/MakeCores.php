@@ -17,10 +17,33 @@ class MakeCores extends Command
         ->addArgument('name', Argument::REQUIRED, "The name of the class");
     }
 
+    /**
+     * 修改路径分隔符
+     *
+     * @param string $path
+     * @param integer $type 1=>\\改/ 2=>/改\\ 3=>改为DIRECTORY_SEPARATOR
+     * @return string
+     */
+    public function updateSeparator(string $path, int $type)
+    {
+        $path = trim($path);
+
+        switch ($type) {
+            case 1:
+                return ltrim(str_replace('\\', '/', $path), '/');
+                break;
+            case 2:
+                return ltrim(str_replace('/', '\\', $path), '\\');
+                break;
+            default:
+                return ltrim(str_replace('/', DIRECTORY_SEPARATOR, str_replace('\\', '/', $path)), DIRECTORY_SEPARATOR);
+                break;
+        }
+    }
+
     public function handle()
     {
-        $classname = trim($this->input->getArgument('name'));
-        $classname = ltrim(str_replace('\\', '/', $classname), '/');
+        $classname = $this->updateSeparator($this->input->getArgument('name'), 1);
 
         [$namespace, $name] = $this->getNamespaceName($classname);
 
@@ -34,11 +57,50 @@ class MakeCores extends Command
         $this->createBase($root_path, $base_namespace, 'services');
         $this->createBase($root_path, $base_namespace, 'validates');
 
-        $this->buildClass($root_path, $base_namespace, 'cache', $namespace, $name);
-        $this->buildClass($root_path, $base_namespace, 'dao', $namespace, $name);
-        $this->buildClass($root_path, $base_namespace, 'model', $namespace, $name);
-        $this->buildClass($root_path, $base_namespace, 'services', $namespace, $name);
-        $this->buildClass($root_path, $base_namespace, 'validates', $namespace, $name);
+        $cache_class     = $this->buildClass($root_path, $base_namespace, 'cache', $namespace, $name);
+        $dao_class       = $this->buildClass($root_path, $base_namespace, 'dao', $namespace, $name);
+        $model_class     = $this->buildClass($root_path, $base_namespace, 'model', $namespace, $name);
+        $service_class   = $this->buildClass($root_path, $base_namespace, 'services', $namespace, $name);
+        $validates_class = $this->buildClass($root_path, $base_namespace, 'validates', $namespace, $name);
+
+        $this->createController($root_path, $namespace, $name, $service_class, $validates_class);
+    }
+
+    public function createController($root_path, $namespace, $name, $service_class, $validates_class)
+    {
+        $name = Str::studly($name);
+        $name_snake = Str::snake($name);
+
+        $whole_namespace = $this->updateSeparator(Config::get('tp_config.controller_default_namespace', 'app/controller'), 3) . DIRECTORY_SEPARATOR . $namespace;
+
+        $pathname = $root_path . $whole_namespace . DIRECTORY_SEPARATOR . $name . '.php';
+
+        if (is_file($pathname)) {
+            return true;
+        }
+
+        if (!is_dir(dirname($pathname))) {
+            mkdir(dirname($pathname), 0755, true);
+        }
+
+        $stub = file_get_contents($this->getStub('controller'));
+
+        file_put_contents($pathname, str_replace(['{%className%}', '{%namespace%}', '{%baseController%}', '{%serviceNamespace%}', '{%validateNamespace%}', '{%validateColumns%}'], [
+            $name,
+            $this->updateSeparator($whole_namespace, 2),
+            Config::get('tp_config.base_controller', \app\BaseController::class),
+            $service_class,
+            $validates_class,
+            $this->getValidateColumns($name_snake)
+        ], $stub));
+
+        $this->output->writeln('<info>' . 'controller:' . $name . ' created successfully.</info>');
+
+        $controller = str_replace('\\', '.', $this->updateSeparator($namespace, 2) . '\\' . $name);
+
+        $route = "Route::get('/{$name_snake}/read/:id', '{$controller}/read');\nRoute::get('/{$name_snake}/get_list', '{$controller}/get_list');\nRoute::post('/{$name_snake}/create', '{$controller}/create');\nRoute::post('/{$name_snake}/update/:id', '{$controller}/update');\nRoute::post('/{$name_snake}/destroy/:id', '{$controller}/destroy');";
+
+        $this->output->writeln('<info>' . "route:\n" . $route . '</info>');
     }
 
     protected function buildClass(string $root_path, string $base_namespace, string $type, string $namespace, string $name)
@@ -67,6 +129,7 @@ class MakeCores extends Command
                 $primary_key = $this->getPrimaryKey($name_snake);
 
                 $columns_info = array_column($columns_info, null, 'COLUMN_NAME');
+                $deleteField = '';
                 if(isset($columns_info['delete_time'])){
                     $defaultSoftDelete = $columns_info['delete_time']['IS_NULLABLE'] == 'NO' ? 0 : 'null';
                     $deleteField = "use SoftDelete;\n    protected \$deleteTime        = 'delete_time';\n    protected \$defaultSoftDelete = {$defaultSoftDelete};";
@@ -113,6 +176,8 @@ class MakeCores extends Command
         }
 
         $this->output->writeln('<info>' . $type . ':' . $name . ' created successfully.</info>');
+
+        return $this->updateSeparator($whole_namespace, 2) . '\\' . Str::studly($name . '_' . $type);
     }
 
 
@@ -329,5 +394,56 @@ EOF;
         }
 
         return $message;
+    }
+
+    public function getValidateColumns(string $table_name)
+    {
+        $columns_list = $this->getColumnsInfo($table_name);
+
+        $autoField = [
+            'delete_time',
+            'create_time',
+            'update_time',
+        ];
+
+        $str = '';
+        foreach ($columns_list as $value) {
+            if($value['COLUMN_KEY'] == 'PRI') {
+                continue;
+            }
+            if(in_array($value['COLUMN_NAME'], $autoField)) {
+                continue;
+            }
+            $columns_default = $this->getColumnsDefault($value['DATA_TYPE']);
+            $str .= "['{$value['COLUMN_NAME']}', {$columns_default}],\n            ";
+        }
+
+        return $str;
+    }
+
+    public function getColumnsDefault(string $field)
+    {
+        switch ($field) {
+            case 'int':
+            case 'bigint':
+            case 'tinyint':
+            case 'smallint':
+                return 0;
+                break;
+            case 'decimal':
+                return 0;
+                break;
+            case 'char':
+            case 'varchar':
+                return "''";
+                break;
+            case 'datetime':
+            case 'date':
+            case 'time':
+                return "''";
+                break;
+            default:
+                return "''";
+        }
     }
 }

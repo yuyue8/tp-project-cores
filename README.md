@@ -7,25 +7,21 @@ composer require yuyue8/tp-project-cores
 
 ## 使用流程
 
-在`tp_config`配置文件中设置`project_cores_namespace`参数，值为`cacge`、`dao`、`model`、`services`、`validate`类的域名空间，默认为`app`
+#### 配置
+在`tp_config`配置文件中设置
+
+`project_cores_namespace`：值为`cacge`、`dao`、`model`、`services`、`validate`类的域名空间，默认为`app`
+`controller_default_namespace`：值为`controller`类的域名空间，默认为`app/controller`
+`base_controller`：值为`controller`所需继承的基类，默认为`\app\BaseController::class`
 
 #### 创建命令
 
-使用下面命令会创建`cacge`、`dao`、`model`、`services`、`validate`类
+使用下面命令会创建`cacge`、`dao`、`model`、`services`、`validate`、`controller`类
 ```
 php think make:cores admin/admin_user
 ```
 `admin` 为在那个目录下
 `admin_user`为表名
-
-使用下面命令会创建`controller`类
-```
-php think make:cores-controller controller/admin/admin_user app\services\admin\AdminUserServices app\validates\admin\AdminUserValidates app\BaseController
-```
-`controller/admin/admin_user` 为在app\controller\admin下创建AdminUser控制器
-`app\services\admin\AdminUserServices` 为控制器所使用的`services`类
-`app\validates\admin\AdminUserValidates` 为控制器所使用的`validate`类
-`app\BaseController` 为控制器所继承的基类，可以不传，默认为`app\BaseController`
 
 
 #### 参数过滤
