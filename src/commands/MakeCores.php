@@ -85,9 +85,11 @@ class MakeCores extends Command
 
         $stub = file_get_contents($this->getStub('controller'));
 
+        $whole_namespace = $this->updateSeparator($whole_namespace, 2);
+
         file_put_contents($pathname, str_replace(['{%className%}', '{%namespace%}', '{%baseController%}', '{%serviceNamespace%}', '{%validateNamespace%}', '{%validateColumns%}'], [
             $name,
-            $this->updateSeparator($whole_namespace, 2),
+            $whole_namespace,
             Config::get('tp_config.base_controller', \app\BaseController::class),
             $service_class,
             $validates_class,
@@ -96,7 +98,7 @@ class MakeCores extends Command
 
         $this->output->writeln('<info>' . 'controller:' . $name . ' created successfully.</info>');
 
-        $controller = str_replace('\\', '.', $this->updateSeparator($namespace, 2) . '\\' . $name);
+        $controller = str_replace('\\', '.', substr($whole_namespace, strpos($whole_namespace, 'controller\\') + 11) . '\\' . $name);
 
         $route = "Route::get('/{$name_snake}/read/:id', '{$controller}/read');\nRoute::get('/{$name_snake}/get_list', '{$controller}/get_list');\nRoute::post('/{$name_snake}/create', '{$controller}/create');\nRoute::post('/{$name_snake}/update/:id', '{$controller}/update');\nRoute::post('/{$name_snake}/destroy/:id', '{$controller}/destroy');";
 
