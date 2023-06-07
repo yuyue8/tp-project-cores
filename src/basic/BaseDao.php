@@ -1,6 +1,7 @@
 <?php
 namespace Yuyue8\TpProjectCores\basic;
 
+use think\facade\Db;
 use think\Model;
 
 /**
@@ -230,7 +231,10 @@ abstract class BaseDao
         } else {
             $where = [is_null($key) ? $this->getPk() : $key => $id];
         }
-        return $this->getModel()->where($where)->delete();
+        
+        return $this->getModel()->destroy(function($query) use (&$where) {
+            $query->where($where);
+        });
     }
 
     /**
@@ -249,8 +253,10 @@ abstract class BaseDao
         } else {
             $where = [is_null($key) ? $this->getPk() : $key => $id];
         }
-        $this->update($where,['update_time'=>time()]);
-        return $this->getModel()->where($where)->inc($field,$num)->update();
+        
+        return $this->getModel()->update([
+            $field => Db::raw("`{$field}` + {$num}")
+        ], $where);
     }
 
     /**
@@ -269,8 +275,10 @@ abstract class BaseDao
         } else {
             $where = [is_null($key) ? $this->getPk() : $key => $id];
         }
-        $this->update($where,['update_time'=>time()]);
-        return $this->getModel()->where($where)->dec($field,$num)->update();
+        
+        return $this->getModel()->update([
+            $field => Db::raw("`{$field}` - {$num}")
+        ], $where);
     }
 
     /**

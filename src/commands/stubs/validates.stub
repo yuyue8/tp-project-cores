@@ -4,10 +4,10 @@ namespace {%namespace%};
 use {%namespacePrefix%}\basic\BaseValidates as BaseValidates;
 
 /**
- * Class {%className%}Validates
+ * Class {%className%}
  * @package {%namespace%}
  */
-class {%className%}Validates extends BaseValidates
+class {%className%} extends BaseValidates
 {
 
     protected $rule = [

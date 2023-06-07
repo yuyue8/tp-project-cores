@@ -4,6 +4,7 @@ namespace {%namespace%};
 use {%baseController%} as BaseController;
 use {%serviceNamespace%} as Services;
 use {%validateNamespace%} as Validate;
+use {%validateNamespace%}Screen as ScreenValidate;
 use think\facade\App;
 
 /**
@@ -38,7 +39,12 @@ class {%className%} extends BaseController
      */
     public function get_list()
     {
-        $data = [];
+        /** @var ScreenValidate $validate */
+        $validate = app(ScreenValidate::class);
+        $data = $validate->scene('get_list')->goCheck([
+            {%validateColumns%}
+        ]);
+
         return get_json_util()->success($this->services->getList($data, '*', [], []));
     }
 

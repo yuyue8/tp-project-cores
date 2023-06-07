@@ -150,10 +150,10 @@ class MakeCores extends Command
                 break;
             case 'validates':
                 $columns_info = $this->getColumnsInfo($name_snake);
-                [$rule, $message, $scene] = $this->getValidate($columns_info);
+                [$rule, $message, $scene, $screen_scene] = $this->getValidate($columns_info);
 
                 file_put_contents($pathname, str_replace(['{%className%}', '{%namespace%}', '{%namespacePrefix%}', '{%namespaceSuffix%}', '{%classNameSnake%}', '{%$rule%}', '{%message%}', '{%scene%}'], [
-                    $name,
+                    $name . 'Validates',
                     str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
                     str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
                     str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
@@ -161,6 +161,17 @@ class MakeCores extends Command
                     $rule,
                     $message,
                     $scene
+                ], $stub));
+
+                file_put_contents(rtrim($pathname, '.php') . 'Screen.php', str_replace(['{%className%}', '{%namespace%}', '{%namespacePrefix%}', '{%namespaceSuffix%}', '{%classNameSnake%}', '{%$rule%}', '{%message%}', '{%scene%}'], [
+                    $name . 'ValidatesScreen',
+                    str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
+                    str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
+                    str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
+                    $name_snake,
+                    $rule,
+                    $message,
+                    $screen_scene
                 ], $stub));
                 break;
             default:
@@ -289,7 +300,6 @@ EOF;
 
         $rule = '';
         $message = '';
-        $scene = '';
         $sceneUpdate = [];
         foreach ($columns_list as $value) {
             if($value['COLUMN_KEY'] == 'PRI') {
@@ -310,10 +320,13 @@ EOF;
 
             $sceneUpdate[] = "'{$value['COLUMN_NAME']}'";
         }
-        $update = implode(', ', $sceneUpdate);
-        $scene .= "'create' => [{$update}],\n        'update' => [{$update}],";
 
-        return [$rule, $message, $scene];
+        $update = implode(', ', $sceneUpdate);
+
+        $scene        = "'create' => [{$update}],\n        'update' => [{$update}],";
+        $screen_scene = "'get_list' => [{$update}],";
+
+        return [$rule, $message, $scene, $screen_scene];
     }
 
     /**
