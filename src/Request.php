@@ -11,6 +11,12 @@ class Request extends \think\Request
     protected $except = [];
 
     /**
+     * 只允许给默认值的变量名(删除传递的参数)
+     * @var array
+     */
+    protected $remove = [];
+
+    /**
      * 获取请求的数据
      * @param array $params
      * @param bool $suffix
@@ -19,6 +25,8 @@ class Request extends \think\Request
      */
     public function more(array $params, bool $suffix = false, bool $filter = true): array
     {
+        $this->param = $this->except($this->remove);
+        
         $p = [];
         $i = 0;
         foreach ($params as $param) {
