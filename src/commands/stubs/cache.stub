@@ -2,7 +2,7 @@
 namespace {%namespace%};
 
 use {%namespacePrefix%}\basic\BaseCache;
-use {%namespacePrefix%}\dao\{%namespaceSuffix%}\{%className%}Dao;
+use {%namespacePrefix%}\dao{%namespaceSuffix%}\{%className%}Dao;
 
 /**
  * Class {%className%}Cache

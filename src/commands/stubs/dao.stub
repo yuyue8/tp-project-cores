@@ -4,7 +4,7 @@ declare (strict_types = 1);
 namespace {%namespace%};
 
 use {%namespacePrefix%}\basic\BaseDao;
-use {%namespacePrefix%}\model\{%namespaceSuffix%}\{%className%}Model;
+use {%namespacePrefix%}\model{%namespaceSuffix%}\{%className%}Model;
 
 /**
  * Class {%className%}Dao

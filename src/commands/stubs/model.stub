@@ -5,7 +5,7 @@ namespace {%namespace%};
 
 use think\model\concern\SoftDelete;
 use {%namespacePrefix%}\basic\BaseModel;
-use {%namespacePrefix%}\cache\{%namespaceSuffix%}\{%className%}Cache;
+use {%namespacePrefix%}\cache{%namespaceSuffix%}\{%className%}Cache;
 
 /**
  * Class {%className%}Model

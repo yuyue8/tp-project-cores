@@ -2,7 +2,7 @@
 namespace {%namespace%};
 
 use {%namespacePrefix%}\basic\BaseServices;
-use {%namespacePrefix%}\cache\{%namespaceSuffix%}\{%className%}Cache;
+use {%namespacePrefix%}\cache{%namespaceSuffix%}\{%className%}Cache;
 use think\exception\ValidateException;
 
 /**

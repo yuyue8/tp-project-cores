@@ -71,7 +71,7 @@ class MakeCores extends Command
         $name = Str::studly($name);
         $name_snake = Str::snake($name);
 
-        $whole_namespace = $this->updateSeparator(Config::get('tp_config.controller_default_namespace', 'app/controller'), 3) . DIRECTORY_SEPARATOR . $namespace;
+        $whole_namespace = $this->updateSeparator(Config::get('tp_config.controller_default_namespace', 'app/controller'), 3) . (empty($namespace) ? '' : DIRECTORY_SEPARATOR . $namespace);
 
         $pathname = $root_path . $whole_namespace . DIRECTORY_SEPARATOR . $name . '.php';
 
@@ -110,7 +110,7 @@ class MakeCores extends Command
         $name = Str::studly($name);
         $name_snake = Str::snake($name);
 
-        $whole_namespace = $base_namespace . DIRECTORY_SEPARATOR . $type . DIRECTORY_SEPARATOR . $namespace;
+        $whole_namespace = $base_namespace . DIRECTORY_SEPARATOR . $type . (empty($namespace) ? '' : DIRECTORY_SEPARATOR . $namespace);
 
         $pathname = $root_path . $whole_namespace . DIRECTORY_SEPARATOR . Str::studly($name . '_' . $type) . '.php';
 
@@ -141,7 +141,7 @@ class MakeCores extends Command
                     $name,
                     str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
                     str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
-                    str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
+                    empty($namespace) ? '' : ('\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $namespace)),
                     $name_snake,
                     $columns_str,
                     $primary_key,
@@ -156,7 +156,7 @@ class MakeCores extends Command
                     $name . 'Validates',
                     str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
                     str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
-                    str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
+                    empty($namespace) ? '' : ('\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $namespace)),
                     $name_snake,
                     $rule,
                     $message,
@@ -167,7 +167,7 @@ class MakeCores extends Command
                     $name . 'ValidatesScreen',
                     str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
                     str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
-                    str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
+                    empty($namespace) ? '' : ('\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $namespace)),
                     $name_snake,
                     $rule,
                     $message,
@@ -181,7 +181,7 @@ class MakeCores extends Command
                     $name,
                     str_replace(DIRECTORY_SEPARATOR, '\\', $whole_namespace),
                     str_replace(DIRECTORY_SEPARATOR, '\\', $base_namespace),
-                    str_replace(DIRECTORY_SEPARATOR, '\\', $namespace),
+                    empty($namespace) ? '' : ('\\' . str_replace(DIRECTORY_SEPARATOR, '\\', $namespace)),
                     $name_snake,
                     $primary_key
                 ], $stub));
