@@ -98,7 +98,8 @@ class MakeCores extends Command
 
         $this->output->writeln('<info>' . 'controller:' . $name . ' created successfully.</info>');
 
-        $controller = str_replace('\\', '.', substr($whole_namespace, strpos($whole_namespace, 'controller\\') + 11) . '\\' . $name);
+        $whole_namespace = substr($whole_namespace, strpos($whole_namespace, '\\controller') + 11);
+        $controller = str_replace('\\', '.', empty($whole_namespace) ? $name : $whole_namespace . '\\' . $name);
 
         $route = "Route::get('/{$name_snake}/read/:id', '{$controller}/read');\nRoute::get('/{$name_snake}/get_list', '{$controller}/get_list');\nRoute::post('/{$name_snake}/create', '{$controller}/create');\nRoute::post('/{$name_snake}/update/:id', '{$controller}/update');\nRoute::post('/{$name_snake}/destroy/:id', '{$controller}/destroy');";
 
