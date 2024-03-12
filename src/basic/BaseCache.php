@@ -1,4 +1,5 @@
 <?php
+
 namespace Yuyue8\TpProjectCores\basic;
 
 use Closure;
@@ -17,16 +18,19 @@ abstract class BaseCache
 
     abstract public function getDao(): object;
 
-    abstract public function deleteCache($where);
+    abstract public function deleteCache(array $where);
 
     /**
      * 删除缓存
+     *
+     * @param \think\Collection $list
+     * @return void
      */
-    public function deleteAllCache($list)
+    public function deleteAllCache(\think\Collection $list)
     {
         /** @var UpdateModelCacheJobs $updateModelCacheJobs */
         $updateModelCacheJobs = app(UpdateModelCacheJobs::class);
-        $updateModelCacheJobs->dispatch([get_class($this), $list]);
+        $updateModelCacheJobs->dispatch([get_class($this), $list->toArray()]);
     }
 
     /**
@@ -49,7 +53,7 @@ abstract class BaseCache
      */
     public function remember($name, $value, $expire = 0)
     {
-        if(Env::get('cache.enable',false)){
+        if (Env::get('cache.enable', false)) {
             return $this->getCache()->remember($name, $value, $expire);
         }
         if ($value instanceof Closure) {
@@ -111,10 +115,43 @@ abstract class BaseCache
      * @param string|array $key
      * @return bool
      */
-    public function delete(string|array $key){
-        if(is_array($key)){
-            return $this->getCache()->deleteMultiple($key);
-        }
-        return $this->getCache()->delete($key);
+    public function delete(string|array $key)
+    {
+        return $this->getCache()->del($key) > 0;
+    }
+
+    /**
+     * 为缓存键修改过期时间
+     *
+     * @param string $key
+     * @return void
+     */
+    public function setExpire(string $key, int $seconds)
+    {
+        $this->getCache()->EXPIRE($key, $seconds);
+    }
+
+    /**
+     * 获取键的剩余过期时间-秒
+     *
+     * @param string $key
+     * @return int -2key不存在，-1没有设置过期时间，其他为剩余秒数
+     */
+    public function getExpire(string $key)
+    {
+        return $this->getCache()->TTL($key);
+    }
+
+    /**
+     * 管道
+     *
+     * @param Closure $fun
+     * @return void
+     */
+    public function pipeline(Closure $fun)
+    {
+        $pipe = $this->getCache()->pipeline();
+        $fun($pipe);
+        return $pipe->exec();
     }
 }

@@ -40,12 +40,14 @@ class {%className%}Cache extends BaseCache
     /**
      * 删除缓存
      */
-    public function deleteCache($list)
+    public function deleteCache(array $list)
     {
-        if(!$list->isEmpty()){
+        $keyList = [];
+        if(!empty($list)){
             foreach ($list as $value) {
-                $this->delete('{%classNameSnake%}:id_to_info:' . $value['{%primaryKey%}']);
+                $keyList[] = '{%classNameSnake%}:id_to_info:' . $value['{%primaryKey%}'];
             }
         }
+        $this->delete($keyList);
     }
 }
