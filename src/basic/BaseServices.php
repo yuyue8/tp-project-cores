@@ -1,4 +1,5 @@
 <?php
+
 namespace Yuyue8\TpProjectCores\basic;
 
 use think\db\exception\DbException;
@@ -22,7 +23,7 @@ abstract class BaseServices
      */
     public function transaction(callable $closure, bool $isTran = true)
     {
-        if($isTran){
+        if ($isTran) {
             // 启动事务
             Db::startTrans();
             try {
@@ -40,7 +41,7 @@ abstract class BaseServices
                 Db::rollback();
                 throw new DbException($e->getMessage());
             }
-        }else{
+        } else {
             try {
                 $result = $closure();
             } catch (ValidateException $e) {
@@ -59,7 +60,7 @@ abstract class BaseServices
      */
     public function createInfo(array $data)
     {
-        if (!($info = $this->getCache()->getDao()->save($data))){
+        if (!($info = $this->getCache()->getDao()->save($data))) {
             throw new DbException('创建失败');
         }
         return $info;
@@ -83,9 +84,9 @@ abstract class BaseServices
      * @param array $data
      * @return bool
      */
-    public function updateInfo($id,array $data)
+    public function updateInfo($id, array $data)
     {
-        if(!$this->getCache()->getDao()->update($id,$data)){
+        if (!$this->getCache()->getDao()->update($id, $data)) {
             throw new DbException('编辑失败');
         }
         return true;
@@ -101,7 +102,7 @@ abstract class BaseServices
         $page  = app()->request->param(Config::get('database.page.pageKey', 'page') . '/d', 1);
         $limit = app()->request->param(Config::get('database.page.limitKey', 'limit') . '/d', 10);
 
-        $limitMax     = Config::get('database.page.limitMax');
+        $limitMax     = Config::get('database.page.limitMax', 100);
         $defaultLimit = Config::get('database.page.defaultLimit', 10);
 
         if ($limit > $limitMax && $isRelieve) {
