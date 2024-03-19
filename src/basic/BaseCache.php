@@ -15,6 +15,12 @@ use think\facade\Env;
  */
 abstract class BaseCache
 {
+    /**
+     * 当前缓存类是否需要在Model事件中删除缓存
+     *
+     * @var boolean
+     */
+    public $isDeleteCache = true;
 
     abstract public function getDao(): object;
 

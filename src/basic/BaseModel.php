@@ -1,6 +1,8 @@
 <?php
+
 namespace Yuyue8\TpProjectCores\basic;
 
+use think\facade\Env;
 use think\Model;
 
 /**
@@ -17,9 +19,11 @@ class BaseModel extends Model
      */
     public static function onAfterInsert($model)
     {
-        self::$cache->deleteAllCache($model->where([
-            [$model->getPk(), '=', $model->getKey()]
-        ])->select());
+        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
+            self::$cache->deleteAllCache($model->where([
+                [$model->getPk(), '=', $model->getKey()]
+            ])->select());
+        }
     }
 
     /**
@@ -27,7 +31,9 @@ class BaseModel extends Model
      */
     public static function onBeforeUpdate($model)
     {
-        self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
+            self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        }
     }
 
     /**
@@ -35,7 +41,9 @@ class BaseModel extends Model
      */
     public static function onAfterUpdate($model)
     {
-        self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
+            self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        }
     }
 
     /**
@@ -43,6 +51,8 @@ class BaseModel extends Model
      */
     public static function onBeforeDelete($model)
     {
-        self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
+            self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        }
     }
 }
