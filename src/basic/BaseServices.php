@@ -93,6 +93,17 @@ abstract class BaseServices
     }
 
     /**
+     * 批量更新信息
+     *
+     * @param array $datas
+     * @return \think\Collection
+     */
+    public function updateAllInfo(array $datas)
+    {
+        return $this->getCache()->getDao()->updateAll($datas);
+    }
+
+    /**
      * 获取分页配置
      * @param bool $isRelieve
      * @return int[]

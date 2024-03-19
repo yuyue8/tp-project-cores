@@ -1,4 +1,5 @@
 <?php
+
 namespace Yuyue8\TpProjectCores\basic;
 
 use think\facade\Db;
@@ -57,18 +58,18 @@ abstract class BaseDao
      * @param array|null $with
      * @return array|Model|null
      */
-    public function getInfo($id,$field='*', ?array $with = [],?string $order='')
+    public function getInfo($id, $field = '*', ?array $with = [], ?string $order = '')
     {
         if (is_array($id)) {
             $where = $id;
         } else {
             $where = [$this->getPk() => $id];
         }
-        return $this-> getModel() -> field($field) -> when(count($with),function($query) use($with) {
-            $query -> with($with);
-        }) -> where($where) -> when($order != '' ,function($query) use($order) {
+        return $this->getModel()->field($field)->when(count($with), function ($query) use ($with) {
+            $query->with($with);
+        })->where($where)->when($order != '', function ($query) use ($order) {
             $query->order($order);
-        }) -> find();
+        })->find();
     }
 
     /**
@@ -103,11 +104,11 @@ abstract class BaseDao
      * @param array $where 其他限制条件
      * @return boolean
      */
-    public function fieldValueIfExist(string $field,string $value,int $id = 0,array $where = []): bool
+    public function fieldValueIfExist(string $field, string $value, int $id = 0, array $where = []): bool
     {
-        $where[] = [$field,'=',$value];
-        if($id != 0){
-            $where[] = [$this->getPk(),'<>',$id];
+        $where[] = [$field, '=', $value];
+        if ($id != 0) {
+            $where[] = [$this->getPk(), '<>', $id];
         }
         return $this->getCount($where) > 0;
     }
@@ -136,9 +137,9 @@ abstract class BaseDao
         })->when(!empty($field), function ($query) use (&$field) {
             $query->field($field);
         })->when(!empty($where), function ($query) use (&$where) {
-            if(is_array($where)){
+            if (is_array($where)) {
                 $query->where($where);
-            }else{
+            } else {
                 $query->whereRaw($where);
             }
         })->when(!empty($order), function ($query) use (&$order) {
@@ -193,13 +194,13 @@ abstract class BaseDao
     }
 
     /**
-     * 插入数据
+     * 批量插入数据
      * @param array $data
      * @return mixed
      */
     public function saveAll(array $data)
     {
-        return $this->getModel()->saveAll($data);
+        return $this->getModel()->saveAll($data, false);
     }
 
     /**
@@ -220,6 +221,16 @@ abstract class BaseDao
     }
 
     /**
+     * 批量更新数据
+     * @param array $data
+     * @return mixed
+     */
+    public function updateAll(array $data)
+    {
+        return $this->getModel()->saveAll($data, true);
+    }
+
+    /**
      * 删除
      * @param int|string|array $id
      * @return mixed
@@ -231,8 +242,8 @@ abstract class BaseDao
         } else {
             $where = [is_null($key) ? $this->getPk() : $key => $id];
         }
-        
-        return $this->getModel()->destroy(function($query) use (&$where) {
+
+        return $this->getModel()->destroy(function ($query) use (&$where) {
             $query->where($where);
         });
     }
@@ -246,14 +257,14 @@ abstract class BaseDao
      * @param string|null $key
      * @return mixed
      */
-    public function inc($id,string $field,int $num = 1, ?string $key = null)
+    public function inc($id, string $field, int $num = 1, ?string $key = null)
     {
         if (is_array($id)) {
             $where = $id;
         } else {
             $where = [is_null($key) ? $this->getPk() : $key => $id];
         }
-        
+
         return $this->getModel()->update([
             $field => Db::raw("`{$field}` + {$num}")
         ], $where);
@@ -268,14 +279,14 @@ abstract class BaseDao
      * @param string|null $key
      * @return mixed
      */
-    public function dec($id,string $field,int $num = 1, ?string $key = null)
+    public function dec($id, string $field, int $num = 1, ?string $key = null)
     {
         if (is_array($id)) {
             $where = $id;
         } else {
             $where = [is_null($key) ? $this->getPk() : $key => $id];
         }
-        
+
         return $this->getModel()->update([
             $field => Db::raw("`{$field}` - {$num}")
         ], $where);
