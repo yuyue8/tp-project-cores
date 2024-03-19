@@ -104,6 +104,20 @@ abstract class BaseServices
     }
 
     /**
+     * 删除信息
+     * @param int|string|array $id
+     * @param string $key 主键
+     * @return bool
+     */
+    public function deleteInfo($id, ?string $key = null)
+    {
+        if (!$this->getCache()->getDao()->delete($id, $key)) {
+            throw new DbException('删除失败');
+        }
+        return true;
+    }
+
+    /**
      * 获取分页配置
      * @param bool $isRelieve
      * @return int[]

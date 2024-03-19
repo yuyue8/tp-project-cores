@@ -233,7 +233,7 @@ abstract class BaseDao
     /**
      * 删除
      * @param int|string|array $id
-     * @return mixed
+     * @return bool
      */
     public function delete($id, ?string $key = null)
     {
