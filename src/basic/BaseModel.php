@@ -19,10 +19,12 @@ class BaseModel extends Model
      */
     public static function onAfterInsert($model)
     {
-        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
-            self::$cache->deleteAllCache($model->where([
-                [$model->getPk(), '=', $model->getKey()]
-            ])->select());
+        if (Env::get('cache.enable', false) && self::$cache->isAfterInsertDeleteCache) {
+            if (!empty($key = $model->getKey())) {
+                self::$cache->deleteAllCache($model->where([
+                    [$model->getPk(), '=', $key]
+                ])->select());
+            }
         }
     }
 
@@ -31,8 +33,14 @@ class BaseModel extends Model
      */
     public static function onBeforeUpdate($model)
     {
-        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
-            self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        if (Env::get('cache.enable', false) && self::$cache->isBeforeUpdateDeleteCache) {
+            if (!empty($where = $model->getWhere())) {
+                self::$cache->deleteAllCache($model->where($where)->select());
+            } elseif (!empty($key = $model->getKey())) {
+                self::$cache->deleteAllCache($model->where([
+                    [$model->getPk(), '=', $key]
+                ])->select());
+            }
         }
     }
 
@@ -41,8 +49,14 @@ class BaseModel extends Model
      */
     public static function onAfterUpdate($model)
     {
-        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
-            self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        if (Env::get('cache.enable', false) && self::$cache->isAfterUpdateDeleteCache) {
+            if (!empty($where = $model->getWhere())) {
+                self::$cache->deleteAllCache($model->where($where)->select());
+            } elseif (!empty($key = $model->getKey())) {
+                self::$cache->deleteAllCache($model->where([
+                    [$model->getPk(), '=', $key]
+                ])->select());
+            }
         }
     }
 
@@ -51,8 +65,14 @@ class BaseModel extends Model
      */
     public static function onBeforeDelete($model)
     {
-        if (Env::get('cache.enable', false) && self::$cache->isDeleteCache) {
-            self::$cache->deleteAllCache($model->where($model->getWhere())->select());
+        if (Env::get('cache.enable', false) && self::$cache->isBeforeDeleteDeleteCache) {
+            if (!empty($where = $model->getWhere())) {
+                self::$cache->deleteAllCache($model->where($where)->select());
+            } elseif (!empty($key = $model->getKey())) {
+                self::$cache->deleteAllCache($model->where([
+                    [$model->getPk(), '=', $key]
+                ])->select());
+            }
         }
     }
 }

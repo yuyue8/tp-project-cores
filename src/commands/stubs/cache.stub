@@ -10,6 +10,10 @@ use {%namespacePrefix%}\dao{%namespaceSuffix%}\{%className%}Dao;
  */
 class {%className%}Cache extends BaseCache
 {
+    public $isAfterInsertDeleteCache  = false;
+    public $isBeforeUpdateDeleteCache = false;
+    public $isAfterUpdateDeleteCache  = false;
+    public $isBeforeDeleteDeleteCache = false;
 
     /**
      * 获取Dao层

@@ -16,11 +16,32 @@ use think\facade\Env;
 abstract class BaseCache
 {
     /**
-     * 当前缓存类是否需要在Model事件中删除缓存
+     * 是否需要在新增数据后删除缓存
      *
      * @var boolean
      */
-    public $isDeleteCache = true;
+    public $isAfterInsertDeleteCache = false;
+
+    /**
+     * 是否需要在更新数据前删除缓存
+     *
+     * @var boolean
+     */
+    public $isBeforeUpdateDeleteCache = false;
+
+    /**
+     * 是否需要在更新数据后删除缓存
+     *
+     * @var boolean
+     */
+    public $isAfterUpdateDeleteCache = false;
+
+    /**
+     * 是否需要在删除数据前删除缓存
+     *
+     * @var boolean
+     */
+    public $isBeforeDeleteDeleteCache = false;
 
     abstract public function getDao(): object;
 
