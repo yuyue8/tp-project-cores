@@ -1,4 +1,5 @@
 <?php
+
 namespace Yuyue8\TpProjectCores\basic;
 
 use think\exception\ValidateException;
@@ -25,7 +26,7 @@ class BaseValidates extends Validate
      */
     public function __construct(Request $request, Lang $lang)
     {
-		$this->setRequest($request);
+        $this->setRequest($request);
         $this->setLang($lang);
     }
 
@@ -116,6 +117,14 @@ class BaseValidates extends Validate
     protected function isPositiveIntegerArray($arr)
     {
         return get_array_util()->isPositiveIntegerArray($arr);
+    }
+
+    /**
+     * 无重复的非负整数数组
+     */
+    public function isUniqueIntegerArray($arr)
+    {
+        return get_array_util()->isUniqueIntegerArray($arr);
     }
 
     /**
