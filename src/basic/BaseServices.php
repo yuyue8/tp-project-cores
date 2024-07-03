@@ -161,12 +161,16 @@ abstract class BaseServices
      *
      * @param \think\Collection|\think\paginator\driver\Bootstrap $list
      * @param array $field_info
+     * @param array $with_field_info    执行预加载模型的获取器，格式为['get_user_info/关联方法' => ['education_id_info/获取器']]
      * @return array|\think\Collection
      */
-    public function getListFieldInfo(\think\Collection|\think\paginator\driver\Bootstrap $list, array $field_info)
+    public function getListFieldInfo(\think\Collection|\think\paginator\driver\Bootstrap $list, array $field_info, array $with_field_info = [])
     {
         foreach ($list as $k => $value) {
             $list[$k] = $this->getFieldInfo($value, $field_info);
+            foreach ($with_field_info as $kk => $vv) {
+                $list[$k][$kk] = $this->getFieldInfo($value[$kk], $vv);
+            }
         }
 
         return $list;
