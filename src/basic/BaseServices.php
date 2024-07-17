@@ -139,12 +139,15 @@ abstract class BaseServices
     /**
      * 获取字段详情
      *
-     * @param \think\Model $info
+     * @param \think\Model|null $info
      * @param array $field_info
      * @return \think\Model
      */
-    public function getFieldInfo(\think\Model $info, array $field_info)
+    public function getFieldInfo(\think\Model|null $info, array $field_info)
     {
+        if ($info === null) {
+            return $info;
+        }
         foreach ($field_info as $key => $value) {
             if (is_array($value)) {
                 $info[$key] = $info->$key;
